@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pub Later — Diploma Now! Escaperoom</title>
+  <style>
+    :root{
+      --brand-orange:#e62429;
+      --brand-grey:#fafafa;
+      --hex-bg:url("hexagons_placeholder.png"); /* ⇦ vervang met jouw artwork-bestand in dezelfde map */
+    }
+    body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--brand-grey) var(--hex-bg) repeat;color:#222;line-height:1.5;}
+    header{background:#111 url("publater_diplomanow.png") center/cover no-repeat;color:#fff;text-align:center;padding:6rem 1rem 4rem;}
+    header h1{margin:0;font-size:3rem;text-shadow:0 0 8px #000}
+    header p{font-size:1.1rem;max-width:50rem;margin:0 auto;opacity:.9}
+    main{max-width:920px;margin:0 auto;padding:2rem 1rem 6rem}
+    section{background:#fff;padding:2rem 1.5rem;border-radius:10px;box-shadow:0 4px 10px rgb(0 0 0 /.08);margin-bottom:2rem;position:relative;overflow:hidden}
+    /* vergrendeling */
+    section.locked .content{filter:blur(3px) grayscale(.6);pointer-events:none}
+    section.locked::after{content:"🔒 LOCKED";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;background:rgb(255 255 255 /.8)}
+    section.locked .code-unlocker{filter:none;pointer-events:auto;position:relative;z-index:2}
+    .code-unlocker{margin-bottom:1.25rem;display:flex;gap:.5rem;flex-wrap:wrap}
+    .code-unlocker input{padding:.55rem .8rem;font-size:1rem;border:1px solid #aaa;border-radius:6px;flex:1 1 180px}
+    .code-unlocker button{padding:.6rem 1.2rem;font-size:1rem;background:var(--brand-orange);color:#fff;border:none;border-radius:6px;cursor:pointer}
+    h2{color:var(--brand-orange);margin-top:0}
+    hr{border:none;border-top:3px solid var(--brand-grey);margin:2rem 0}
+    pre{white-space:pre-wrap;background:#f5f5f5;padding:1rem;border-left:4px solid #666;overflow-x:auto;font-family:Consolas,monospace;font-size:.95rem}
+    blockquote{border-left:4px solid #ff9800;background:#faf7f2;margin:1.5rem 0;padding:.5rem 1rem}
+    kbd{background:#eee;border:1px solid #ccc;border-bottom-width:2px;border-radius:4px;padding:.1rem .3rem}
+    @media (max-width:600px){header h1{font-size:2.3rem}}
+  </style>
+  <script>
+    /* =============================================================
+       QUICK SETTINGS  (pas hier je wachtwoorden/links/ID's aan)
+       Optioneel: laad extern settings-bestand vóór dit script en
+       zet daarin window.APP_SETTINGS = { ... } om te overriden.
+       ============================================================= */
+    const SETTINGS={
+      codes:{
+        resources:"huize hangmat",
+        opdracht2:"beheersing12", 
+        opdracht3:"lesplan45",
+        opdracht4:"beoordeling34",
+        opdracht5:"fotos33",
+        opdracht6:"assessment88",
+        finale:"jippiejip"
+      },
+      openRouter:{email:"vraag de gamemaster om de login",pw:"vraag de gamemaster om het wachtwoord"},
+      cluely:{email:"Vraag de gamemaster om de login mail",pw:"vraag de gamemaster om het wachtwoord"},
+      templates:[
+        {team:1,url:"https://edu.nl/ut63q"},
+        {team:2,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/Ec5YB0Is4k9KgGPks33oCnYB6Furqpqx6l1gaKX6isnHPQ?e=MNccG4"},
+        {team:3,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/EU8dSs9CQDpErs6FfuvnlQQB_YSMJygQM7kezeo-gzwxnQ?e=pM3mEY"},
+        {team:4,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/ESBS_iT9ImtLtftfC91a1-YBqUYTs7Y3K6CX9EQAAvi4VQ?e=VfaNQe"},
+        {team:5,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/EVkbzkcV04dHucsBWdecimMBvgyQ9yjCDT9WLVXyW1QgJw?e=HThlt5"},
+        {team:6,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/Ea-2ZTXBGUBClcObqeyQSPwB-oqBTQxcChcBSWVGKjryLg?e=NhAwcI"},
+        {team:7,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/ESk9z4Scx_JEoGJk6xf-yi4B7iEQWMte4ODWJ7zZzGxwRw?e=t1dhEX"},
+        {team:8,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/EV7QYKbe4WxOkNsVfj-_uMcBToQaZJB_IAtgvUzNb_KErQ?e=Hr0YBM"},
+        {team:9,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/EfP_mszxcf9IrE4Nx3dxFOMB1jTIZe6fTiRweWZUJQRjSw?e=UwrQoA"},
+        {team:10,url:"https://hogeschoolutrecht.sharepoint.com/:w:/s/ext_Onderwijs_projectdigitalegeletterdheiddigitaledidactiek/EQsYUPOQ5rNMtNzFn8pbnzQB9nhr4M2FTYcawZ1Kk2DLVA?e=MlQl4c"}
+      ],
+       introYT:"mMeRIPnI_dQ",
+       outroYT:"muZ76JASI6k"
+    };
+    /* Optionele override via extern bestand */
+    if (window.APP_SETTINGS) { Object.assign(SETTINGS, window.APP_SETTINGS); }
+
+    /* ---------- simple locker ---------- */
+    const LS_KEY="publater_progress";
+    const getProgress=()=>JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+    const saveProgress=state=>localStorage.setItem(LS_KEY,JSON.stringify(state));
+    const isUnlocked=id=>getProgress()[id];
+    const unlock=(id)=>{const s=getProgress();s[id]=true;saveProgress(s)};
+
+    function populateDynamic(){
+      // YouTube embeds
+      const intro=document.getElementById('introYT');
+      const outro=document.getElementById('outroYT');
+      if(intro && SETTINGS.introYT){ intro.src = "https://www.youtube.com/embed/"+encodeURIComponent(SETTINGS.introYT); }
+      if(outro && SETTINGS.outroYT){ outro.src = "https://www.youtube.com/embed/"+encodeURIComponent(SETTINGS.outroYT); }
+      // Logins
+      const oe=document.getElementById('orEmail'); if(oe) oe.textContent = SETTINGS.openRouter.email;
+      const op=document.getElementById('orPw');    if(op) op.textContent = SETTINGS.openRouter.pw;
+      const ce=document.getElementById('clEmail'); if(ce) ce.textContent = SETTINGS.cluely.email;
+      const cp=document.getElementById('clPw');    if(cp) cp.textContent = SETTINGS.cluely.pw;
+      // Templates lijst
+      const list=document.getElementById('templatesList');
+      if(list){
+        list.innerHTML = '';
+        SETTINGS.templates.forEach(t=>{
+          const li=document.createElement('li');
+          const a=document.createElement('a');
+          a.href=t.url; a.target='_blank'; a.rel='noopener';
+          a.textContent = `PortFolio Jip groep ${t.team}`;
+          li.appendChild(a); list.appendChild(li);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      // restore
+      document.querySelectorAll('section.locked').forEach(sec=>{
+        if(isUnlocked(sec.id)){
+          sec.classList.remove('locked');
+          sec.querySelector('.code-unlocker')?.remove();
+        }
+      });
+      // populate dynamic bits
+      populateDynamic();
+      // click handler + enter-to-submit
+      document.addEventListener('click',e=>{
+        if(e.target.matches('.code-unlocker button')){
+          const wrap=e.target.closest('.code-unlocker');
+          const val=(wrap.querySelector('input')?.value||'').trim().toLowerCase();
+          const section=wrap.closest('section');
+          const need=(SETTINGS.codes[section.id]||'').toLowerCase();
+          if(val===need && need){ unlock(section.id); section.classList.remove('locked'); wrap.remove(); }
+          else alert('Foute code – probeer opnieuw');
+        }
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Enter' && e.target instanceof HTMLInputElement && e.target.closest('.code-unlocker')){
+          e.preventDefault();
+          e.target.closest('.code-unlocker').querySelector('button').click();
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+<header>
+  <h1>Pub Later — Diploma Now!</h1>
+  <p>⏱️ 60‑minute AI‑powered escaperoom voor portfolio‑stress… en gratis drank achteraf.</p>
+</header>
+<main>
+  <!-- -------------------------------- STORY -------------------------------- -->
+  <section id="story">
+    <h2>🍻 Pub Later — Diploma Now!</h2>
+    <p><strong>Tijd &amp; Plaats:</strong> Vrijdag 18:00, <em>Huize Hangmat</em> – het roemruchte studentenhuis waar <u>deadlines zelden worden gehaald</u>, maar rondjes in de kroeg altijd op tijd komen.</p>
+    <p>De frituurpan sist, de eerste pitchers dampen al… en dan dropt huisgenoot <strong>Jip</strong> de bom: zijn <mark>complete afstudeer‑portfolio</mark> bestaat nog steeds niet. Over één uur logt de beoordelaar in voor het finale assessment. Zonder dossier ➡️ geen diploma ➡️ geen gala ➡️ geen after‑party tot zonsopkomst.</p>
+    <blockquote><strong>De groep pauzeert de pitchers en roept unisono:</strong><br><span style="font-size:1.25em;">“Pub later—diploma now!”</span></blockquote>
+    <p>Vijf minuten later transformeert de woonkamer in een war‑room: laptops op stapels pizzadozen, Wi‑Fi-extender in de plantenbak, AI-tabs open. De countdown tikt. <em>Jullie missie in 60 minuten:</em></p>
+    <ol>
+      <li><strong>Visie &amp; kernwaarden</strong> schrijven.</li>
+      <li><strong>Bewijshoofdstukken</strong> (lesplan + beoordeling + reflectie + foto).</li>
+      <li><strong>Portfolio</strong> samenvoegen.</li>
+      <li><strong>Assessment</strong> verdedigen.</li>
+      <li><strong>Pub</strong> zodra de cocktail-vouchers roepen.</li>
+    </ol>
+    <hr>
+    <h3>🎬 Introvideo</h3>
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;">
+      <iframe id="introYT" src="" style="position:absolute;width:100%;height:100%;left:0;top:0;" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <!-- --------------------------- RESOURCES + OPDRACHT 1 --------------------------- -->
+  <section id="resources" class="locked">
+    <h3>🔑 Hoe heet het studentenhuis waarin jullie wonen?</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>🛠️ Aan de slag met OpenRouter + Portfolio-template</h2>
+      <h3>📌 Doel</h3>
+      <p>Tijdens deze workshop leer je werken met <strong>OpenRouter</strong>, een platform waarmee je toegang krijgt tot verschillende AI-taalmodellen (GPT‑4, Claude, Mistral…). Je leert inloggen, een model kiezen en AI inzetten in je portfolio‑workflow.</p>
+      <hr>
+      <h3>✅ Wat heb je nodig?</h3>
+      <ul>
+        <li>Laptop of tablet met internetverbinding</li>
+        <li>Deze pagina 😎</li>
+        <li>Inloggegevens (zie onderstaande box)</li>
+      </ul>
+      <blockquote><strong>OpenRouter login</strong><br>E‑mail: <span id="orEmail"></span><br>Wachtwoord: <span id="orPw"></span></blockquote>
+      <h3>🔐 Stap 1: Inloggen op OpenRouter</h3>
+      <ol>
+        <li>Surf naar <a href="https://openrouter.ai" target="_blank" rel="noopener">openrouter.ai</a> → <strong>Login</strong></li>
+        <li>Voer bovenstaande credentials in.</li>
+        <li>Kies in het filtervak je model (bijv. <em>Claude Sonnet 4</em>).</li>
+        <li>Klik de blauwe <em>Start chatting</em>-button.</li>
+		  <li>
+		Als je bent ingelogd zie je een scherm waar je een model kunt kiezen:<br><br>
+		<img src="Openrouter1.png" alt="Modelkeuze scherm" style="max-width:500px;"><br>
+
+		In het filtervakje kun je de te gebruiken modelnaam typen; als het model verschijnt kun je erop klikken.<br><br>
+		<img src="Openrouter2.png" alt="Filtervak model kiezen" style="max-width:500px;"><br><br>
+
+		Daarna klik je op de blauwe knop <img src="openrouterchatbutton.png" alt="Start chatting button" style="height:30px;"> om te beginnen met chatten.
+	  </li>
+      </ol>
+      <hr>
+      <h3>🗂️ Portfolio‑template kiezen</h3>
+      <p>Kies de link die past bij jullie teamnummer:</p>
+      <ul id="templatesList"></ul>
+      <p>Werk <strong>direct</strong> in het online Word‑document. De gamemaster kijkt mee.</p>
+	  
+	  <p>
+	  <div style="background-color: #ffeb3b; padding: 15px; border: 2px solid #000; border-radius: 8px; margin: 20px 0;">
+		  <p style="font-size: 1.2em; font-weight: bold; text-align: center; margin: 0;">
+			Je baseert je op deze portfolio-handleiding:  
+			<a href="LEER_AI_Handleiding_Startassessment_2025_v11.docx" target="_blank" rel="noopener" style="color: #d32f2f; text-decoration: underline;">
+			  📄 LEER_AI_Handleiding_Startassessment_2025_v11.docx
+			</a>
+		  </p>
+		  <p>
+			  Je maakt steeds gezamenlijk de opdracht. Als jullie alle vier de opdracht hebben voltooid kun je hem toevoegen aan je portfolio. 
+			  Vraag daarna de portfoliobegeleider om een korte check op compleetheid te doen. 
+			  Is alles goed? Dan krijg je de code voor het volgende onderdeel.
+		   </p>
+	  </div>
+	  Je baseert je op deze portfolio-handleiding:  
+	 
+	</p>
+
+	
+
+	<h3>⏳ Tijd &amp; volgorde</h3>
+	<p>Er zijn 5 opdrachten die je in <strong>45 minuten</strong> moet afronden.</p>
+
+	<p>
+	  Als je binnen 45 minuten een portfolio klaar hebt, mag je misschien assessment gaan doen ;)
+	</p>
+
+      <hr>
+      <h2>Opdracht 1 — “Visie &amp; kernwaarden”</h2>
+      <p><em>De rode draad smeden – en kijken of AI de chaos van Jip kan omzetten in een verhaal dat werkt.</em></p>
+      <h3>Wat gaan we doen?</h3>
+      <p>Voordat jullie Jip’s portfolio kunnen bouwen, moeten we weten wie Jip is als docent. Bepaal samen hoe Jip naar onderwijs kijkt en pas de prompt hieronder aan.</p>
+      <h3>Welke AI gebruiken we?</h3>
+      <p>Gebruik <strong><span style="color: red;">Claude Sonnet 4</span></strong>.</p>
+      <h3>Prompt voor de VISIE (door de groep samen ingevoerd in AI)</h3>
+<pre>Stel je voor: ik ben een student-leraar in het vak &lt; Vul hier een vak in&gt; die op het laatste moment nog snel een portfolio moet inleveren.
+Mijn lessen zijn creatief, een beetje rommelig maar altijd met goede bedoelingen. Schrijf een onderwijsvisie van ongeveer 200 woorden in de ik-vorm, alsof ik ‘m zelf geschreven heb.
+
+De toon mag informeel en een beetje slordig zijn – alsof ik net op tijd klaar was.
+
+Zorg dat de visie geloofwaardig is voor een beginnende leraar met veel energie en ideeën, maar nog weinig structuur.
+
+Voeg 3 tot 5 kleine taalfoutjes toe (zoals een vergeten komma, iets te lange zinnen of een kromme formulering) zodat het menselijk oogt.
+
+Sluit af met een duidelijke laatste zin die alles samenvat.
+
+Lever ook 8 korte bulletpoints aan, in de vorm:
+“In mijn lessen zie je…” Laat AI zelf invullen wat voor dingen je daar ziet.</pre>
+      <h3>Waar komt het terecht in de template?</h3>
+      <p>Plak de visie + bullets onder <strong>Visie en Kernwaarden</strong> in het Word‑template. Gebruik “Speciaal plakken → platte tekst”.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- OPDRACHT 2 --------------------------- -->
+  <section id="opdracht2" class="locked">
+    <h3>🔑 Vul de code in die je van de gamemaster krijgt zodra je dit hoofdstuk hebt toegevoegd</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>De beheersing van de bekwaamheden</h2>
+      <p><em>De kernwaarden in de “praktijk” - hoe hadden Jips lessen eruit kunnen zien?</em></p>
+      <h3>Wat gaan we doen?</h3>
+      <p>Verdeel de vier bekwaamheden over de vier teamleden. Ieder schrijft één hoofdstuk: beschrijf een lesplan dat de gekozen bekwaamheid aantoont en licht in een bewijstekst toe waarom.</p>
+      <h3>Welke AI gebruiken we?</h3>
+      <p>Gebruik <strong><span style="color: red;">ChatGPT-4o</span></strong> en voeg bij de prompt:</p>
+      <ul><li>De zojuist geschreven visie + 8 bullets.</li><li>De bekwaamheidsbeschrijving uit de portfolio‑handleiding.</li></ul>
+      <h3>Prompt (bewerken op geel gemarkeerde delen):</h3>
+<pre>Ik ben een beginnende leraar in het vak &lt;vul hier het vak in&gt; en schrijf een beschrijving van 500 woorden van een les die ik ooit heb gegeven (of zou kunnen geven).
+Deze beschrijving is onderdeel van mijn afstudeerportfolio.
+
+In deze beschrijving toon ik aan dat ik de bekwaamheid &lt;vakinhoudelijk, didactisch, pedagogisch of professioneel&gt; beheers; deze bekwaamheid is als volgt omschreven: &lt;plak hier de bekwaamheidsbeschrijving + jouw visie&gt;.
+
+Stijl: menselijk, enthousiast, een beetje rommel zoals Jip.
+
+Structuur:
+1. Introductie belang bekwaamheid
+2. Lesplan
+3. Wat gebeurt er in de les?
+4. Doel
+5. Waarom toont deze les de bekwaamheid aan?
+6. Wat maakt dit typisch een “Jip-les”?</pre>
+      <h3>Waar komt het terecht in de template?</h3>
+      <p>Plak onder het kopje <strong>Lesplan &amp; Bewijstekst</strong> bij jouw bekwaamheid.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- OPDRACHT 3 --------------------------- -->
+  <section id="opdracht3" class="locked">
+    <h3>🔑 Vul de code in die je van de gamemaster krijgt zodra je dit hoofdstuk hebt toegevoegd</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>Werkplekbeoordeling</h2>
+      <p><em>Laat zien dat iemand anders het ook gelooft….</em></p>
+      <h3>Wat gaan we doen?</h3>
+      <p>Schrijf een korte beoordeling uit naam van je werkplekbegeleider. Deze tekst maakt het portfolio geloofwaardiger en geeft input voor reflectie. Gebruik AI, maar geef het minimale context.</p>
+      <h3>Welke AI gebruiken we?</h3>
+      <p>Gebruik <strong><span style="color: red;">ChatGPT‑4o</span></strong></p>
+      <ul><li>Gebruik je lesbeschrijving uit opdracht 2</li><li>Upload de foto <em>beoordelingsformulier.png</em> (zet het bestand in dezelfde map)</li></ul>
+      <h3>Prompt:</h3>
+<pre>Je bent de werkplekbegeleider bent van een beginnende, enthousiaste maar soms wat chaotische student-leraar in het vak &lt;vul hier het vak in&gt; Jip. Je hebt een les bijgewoond. 
+Het lesplan van deze les is als volgt &lt;Vul hier de tekst van Lesplan &amp; bewijstekst, de vorige opdracht in&gt;. 
+
+Maak een beoordeling. Niet alles briljant, Jip is gewoon ruim voldoende. Zorg voor overzichtelijke layout De beoordelingsvakken bevatten een mix van tekens zoals "+", "-", "+/-" en "0". Zorg dat de tabel goed in ms word geplakt kan wordern. Bedenk - Eén aandachtspunt voor verdere groei Eindzin in de trant van: “ik zie potentie / dit komt goed”</pre>
+      <h3>Waar komt het terecht in de template?</h3>
+      <p>Onder <strong>Beoordeling Werkplekbegeleider</strong>.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- OPDRACHT 4 --------------------------- -->
+  <section id="opdracht4" class="locked">
+    <h3>🔑 Code van gamemaster na toevoegen reflecties</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>Reflectie</h2>
+      <p><em>Jip kijkt terug. Korthagen &amp; STARR-style.</em></p>
+      <h3>Wat gaan we doen?</h3>
+      <p>Je reflecteert op de les én op de feedback van je werkplekbegeleider. Dit doe je met twee modellen: Korthagen en STARR. Gebruik de feedbacktekst als input voor AI..</p>
+      <h3>We;lkeAI gebruiken we?</h3>
+      <p>Gebruik <strong><span style="color: red;">Gemini 2.5 Pro</span></strong></p>
+      <h3>Prompt</h3>
+<pre>Ik ben een beginnende leraar in het vak &lt;vul vak&gt; en heb een lesbeschrijving gechreven en ik heb daarop een beoordeling ontvangen van mijn werkplek begeleider: &lt; plak hier de lesbeoordeling en de beoordeling van de vorige opdracht in, plak het geheel hierin&gt;
+
+Schrijf hierover nu:
+1. Korthagenreflectie (±150 woorden):  
+Gebruik de 5 stappen: handelen – terugblikken – bewustwording – alternatieven – voornemen
+
+2. STARR-reflectie (±150 woorden)
+Gebruik: Situatie – Taak – Actie – Resultaat – Reflectie
+
+Gebruik een losse, reflectieve toon. Niet te formeel. Licht zoekend, menselijk, hoopvol. Voeg eventueel herhalingen of spreektaal toe voor geloofwaardigheid.
+
+Benoem in de output niet expliciet het aantal woorden.</pre>
+      <h3>Waar komt het terecht?</h3>
+      <p>Bij <strong>Reflecties (Korthagen &amp; STARR)</strong>.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- OPDRACHT 5 --------------------------- -->
+  <section id="opdracht5" class="locked">
+    <h3>🔑 Code van gamemaster na upload foto</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>Foto bewijs</h2>
+      <p><em>Pics or it didn’t happen.”Wat gaan we doen?</em></p>
+      <p>Je genereert een of meer foto’s bij de beschreven les.</p>
+      <h3>Stap 1 – Prompt bedenken <span style="color: red;">(DeepSeek V3)</span></h3>
+      <p>We laten de prompt voor de foto genereren door <strong>DeepSeek V3</strong>. Daarna loggen we in op <strong>firefly.adobe.com</strong> en genereren we met de prompt de gevraagde foto.</p>
+      <h4>🧪 Prompt voor de afbeelding (individueel):</h4>
+<pre>Bedenk een prompt om een foto te generen van een klassensituatie, die als bewijs kan dienen voor de hieronder beschreven bekwaamheid. De foto komt als bewijs in een portfolio waarin een beginnend student de beheersing van de bekwaamheid aantoont.
+• De docent is in actie (student, energiek, casual kleding)
+• Leerlingen zitten met hun rug naar de camera of hebben geblurde gezichten
+• De setting past bij de beschreven les (denk aan groepjes, buitenactiviteit, techniekhoek etc.)
+• De afbeelding is foto realistisch
+
+Plak de prompt even in een documentje, notepad, oid om deze niet kwijt te raken</pre>
+      <h3>Stap 2 – Foto genereren <span style="color: red;">(Firefly)</span></h3>
+      <p>Login op <a href="https://firefly.adobe.com" target="_blank" rel="noopener">firefly.adobe.com</a> met je HU‑account → plak de prompt.</p>
+      <h3>Waar komt het terecht?</h3>
+      <p>Onder <strong>Fotobewijs</strong>.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- OPDRACHT 6 --------------------------- -->
+  <section id="opdracht6" class="locked">
+    <h3>🔑 Code van gamemaster na geslaagd assessment</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>Assessment</h2>
+      <p><em>Tell me about it…</em></p>
+      <h3>Wat gaan we doen?</h3>
+      <p>Je gaat Assessment doen, geholpen door Cluely.</p>
+      <blockquote><strong>Cluely login</strong><br>E‑mail: <span id="clEmail"></span><br>Wachtwoord: <span id="clPw"></span></blockquote>
+      <h3>Stap 1 – Personaliseren</h3>
+      <p>Klik links op <strong>Personalize</strong> en plak deze prompt: (IS AL GEDAAN!)</p>
+<pre>&lt;role_definition&gt;
+Je bent mijn onzichtbare assistent. Je communiceert **uitsluitend** met mij (de student), nooit rechtstreeks met de assessor.
+&lt;/role_definition&gt;
+
+&lt;goal_scope&gt;
+• Hoofddoel: zodra de assessor iets vraagt over mijn portfolio, dat hieronder is toegvoegd of procedures, geef jij mij onmiddellijk een beknopt, juist antwoord om uit te spreken.&lt;br&gt;
+• Subdoelen: herinner me proactief aan relevante voorbeelden/metrics uit het portfolio; signaleer lacunes als info ontbreekt.
+&lt;/goal_scope&gt;
+
+&lt;response_structure&gt;
+🔹 **CLUEly ANTWOORD** – max 25 woorden  
+• **Kernpunt 1** – max 15 woorden  
+• **Kernpunt 2** – max 15 woorden  
+_(optioneel)_ Voorbeeld of cijfer (≤ 20 woorden)  
+&lt;!-- alles wat je retourneert staat standaard in markdown zodat ik het makkelijk kan kopi&euml;ren. --&gt;
+&lt;/response_structure&gt;
+
+&lt;tone_style&gt;
+Professioneel, positief, actief. Vermijd jargon; spreek in “ik/mij”. Toon vertrouwen, niet arrogantie.
+&lt;/tone_style&gt;
+
+&lt;operational_rules&gt;
+1. Reageer op **alle** vragen van de assessor over het portfolio of mijn fuctioneren als docent gaat.  
+2. Begin elke output met het label “🔹” zodat ik het direct herken.  
+3. Gebruik uitsluitend informatie uit &lt;portfolio&gt; hieronder of uit mijn follow-ups.  
+
+&lt;/operational_rules&gt;
+
+&lt;portfolio&gt;
+&lt;!-- Plak hier je volledige portfolio --&gt;
+&lt;/portfolio&gt;
+</pre>
+      <h3>Download &amp; start Cluely</h3>
+      <p>Tijdens de call druk je op <kbd>⌘ + Enter</kbd> (Mac) / <kbd>Ctrl + Enter</kbd> (Win) telkens als je input wilt.</p>
+    </div>
+  </section>
+
+  <!-- --------------------------- FINALE --------------------------- -->
+  <section id="finale" class="locked">
+    <h3>🔑 Slotcode (gamemaster)</h3>
+    <div class="code-unlocker"><input type="text" placeholder="voer code in…"><button>Ontgrendel</button></div>
+    <div class="content">
+      <h2>🍾 Pub Later, Diploma First!</h2>
+      <p><em>Als Jip vanavond in smoking (diploma in hand) de dansvloer op stapt en de DJ aankondigt dat “de reddende engelen van Huize Hangmat” gratis drankjes krijgen, weet jij: dit uur was elke seconde waard.</em></p>
+      <h3>🎉 Eindvideo</h3>
+      <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;">
+        <iframe id="outroYT" src="" style="position:absolute;width:100%;height:100%;left:0;top:0;" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <hr>
+      <h3>🥂 Gefeliciteerd, team!</h3>
+      <ul>
+        <li>Portfolio <strong>inge­leverd</strong></li>
+        <li>Assessment <strong>geslaagd</strong></li>
+        <li>Gratis drankjes <strong>ontgrendeld</strong></li>
+      </ul>
+      <p style="text-align:center;font-size:1.2rem;"><strong>Bedankt voor het spelen – jullie zijn officieel de reddende engelen van Huize Hangmat!</strong></p>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
